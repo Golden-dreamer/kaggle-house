@@ -135,48 +135,53 @@ le.fit(bb)
 pd.Series(le.transform(bb)).to_frame().join(Full_train['price']).corr()
 
 
+missed_num_df = Full_train[missed_numeric_values].copy()
 
 
-
-sns.regplot(x='GarageYrBlt', y='price',data=Full_train,order=2,
-           scatter_kws={"color": "black"}, line_kws={"color": "red"})
+missed_num_df.isna().sum()
 
 
-sns.regplot(x='YearRemodAdd', y='price',data=Full_train,order=2,
-           scatter_kws={"color": "black"}, line_kws={"color": "red"})
+missed_num_df.drop(columns='GarageYrBlt', inplace=True)
 
 
-sns.regplot(x='YearBuilt', y='price',data=Full_train,order=2,
-           scatter_kws={"color": "black"}, line_kws={"color": "red"})
+missed_num_df.corrwith(Full_train['price'])
 
 
-sns.regplot(x='2ndFlrSF', y='price',data=Full_train,order=2,
-           scatter_kws={"color": "black"}, line_kws={"color": "red"})
+missed_num_df
 
 
-(Full_train['GarageYrBlt']**(12)).corr(Full_train['price'])
+missed_num_df['MasVnrArea'].value_counts()
 
 
-Full_train[numeric_col].isna().sum()[Full_train[numeric_col].isna().sum() > 0]
+861/1460
 
 
-contains_nan = ['LotFrontage','GarageYrBlt','MasVnrArea']
-
-
-Full_train[contains_nan].isna().sum()
-
-
-features_to_observe = list(Full_train[numeric_col].drop(columns=contains_nan).columns)
+missed_num_df.drop(columns='MasVnrArea', inplace=True)
 
 
 
 
 
-for feature in features_to_observe:
-    pearson_coef, p_value = stats.pearsonr(Full_train[feature],y_full)
+F_P = {}
+for feature in numeric_col:
+    y = pd.Series(Full_train['price'], index=Full_train[feature].dropna().index)
+    pearson_coef, p_value = stats.pearsonr(Full_train[feature].dropna(),y)
     #if (abs(pearson_coef) > 0.5):
-    print('Feature:',feature)
-    print('The correlation coefficient is:', pearson_coef, 'the p-value is:', p_value)
+    F_P[feature] = (pearson_coef, p_value)
+    #print('Feature:',feature)
+    #print('The correlation coefficient is:', pearson_coef, 'the p-value is:', p_value)
+for k in F_P:
+    print(k, F_P[k])
+
+
+for k in F_P:
+    if F_P[k][0] > 0.5:
+        print(k, F_P[k])
+
+
+for k in F_P:
+    if F_P[k][1] < 0.05:
+        print(k, F_P[k])
 
 
 porch = ['EnclosedPorch', 'OpenPorchSF','3SsnPorch','ScreenPorch']
